@@ -1,0 +1,120 @@
+
+
+// TODO : compléter cette fonction
+
+
+function substituerEtiquette(texte, etiquette, valeur){
+
+
+    var longueurEtiquette = etiquette.length; //length
+
+    // on va regarder chaque i + longueurEtiquette pour essayer de trouver
+    // letiquette dans le texte. Quand on le trouve on remplace par la valeur
+    // et on continue pour le reste du texte, donc on le change a chaque fois
+    // qu'on le trouve dans le texte.
+
+    for(var i = 0; i < texte.length; i++){
+
+        if(texte.slice(i, i + longueurEtiquette) === etiquette){
+            texte = texte.slice(0, i) + valeur + texte.slice(i + longueurEtiquette);
+        }
+    }
+
+    return texte // on return le texte avce les mots changes
+}
+
+
+// TODO : compléter cette fonction
+
+
+var getIndex = function () {
+
+    // Retourne le fihier index.html et on peut l'utiliser comme str
+    var fichierHtML = readFile("template/index.html");
+
+    // Va chercher une image rdm et apres on substitue {{img}} de l'image dans
+    // le fichier index.html par l'image rdm
+    var imgRandom = getImage();
+    fichierHtML = substituerEtiquette(fichierHtML, "{{img}}", imgRandom);
+
+
+    /*
+     On commence par aller chercher un tab de 20 articles differents. Ensuite,
+     on creer un nouveau tableau. On met le str qui va permettre de clicker
+     sur l'article sous le nom de urlArticle. Apres on va demander que chaque
+     article random prenne la forme de url clickable grace a substituer.
+     On push ensuite chaque nouvel article clickable dans le tableau vide.
+     Apres on utilise tabToHTML pour rendre le tableau lisible sur HTML.
+     Finalement on remplace dans index.html {{{articles-recents}}} par les
+     nouveau articles clickables.
+     */
+    var articlesRandom = getRandomPageTitles(20);
+    var articlesRandom2 = [];
+    var urlArticle ="<a href=\"article/{{titre}}\">{{titre}}</a>";
+
+
+    for(var i = 0; i < articlesRandom.length; i++){
+        var elementTableauArticles = articlesRandom[i];
+        elementTableauArticles = substituerEtiquette(urlArticle, "{{titre}}", elementTableauArticles);
+        articlesRandom2.push(elementTableauArticles);
+    }
+
+    articlesRandom2 = tabToHTML(articlesRandom2);
+    fichierHtML = substituerEtiquette(fichierHtML, "{{{articles-recents}}}", articlesRandom2);
+
+    return fichierHtML;
+};
+
+/*
+Fonction pour les tableaux des articles qui rend le tableau en code html
+ */
+function tabToHTML (tab) {
+    return tab.reduce( (accumulateur, x) => {
+        return accumulateur + "\n <li>" + x + "</li>";
+    }, "" ) + "\n"
+}
+
+
+function utiliserRandom (tableau){
+    return tableau[Math.floor(Math.random()*tableau.length)];
+}
+
+// TODO
+
+var corpus = readFile('corpus/wikipedia');
+
+
+var getArticle = function(titre) {
+    var fichierHTML = readFile("template/article.html");
+    var moitieTitre = (titre.length)/2;
+    var titre1 = titre.slice(0, moitieTitre);
+    var titre2 = titre.slice(moitieTitre, titre.length);
+
+    //titre Article
+    fichierHTML = substituerEtiquette(fichierHTML, "{{titre}}", titre);
+
+    //Image Article
+    var imgTitre = getImage(titre);
+    fichierHTML = substituerEtiquette(fichierHTML, "{{img}}", imgTitre);
+
+    // on créer le modele qu'on place dans une variable "model" pour faciliter
+    var modele = creerModele(corpus);
+
+    // On ne spécifie pas le nombre de paragraphes dans l'enoncé donc je vais
+    // en mettre autant que dans l'exemple donné
+    // On ne spéficie pas non plus le nombre de phrases et de mots max alors
+    // je vais mettre des variables fixes.
+    var paragraphes= genererParagraphes(modele, 7, 6, 15);
+
+    var contenuArticle = utiliserRandom(premieresPhrases);
+    contenuArticle = substituerEtiquette(contenuArticle, "{{titre}}", titre);
+    contenuArticle = substituerEtiquette(contenuArticle, "{{titre-1}}", titre1);
+    contenuArticle = substituerEtiquette(contenuArticle, "{{titre-2}}", titre2);
+
+    contenuArticle += paragraphes;
+    
+    fichierHTML = substituerEtiquette(fichierHTML, "{{{contenu}}}", contenuArticle);
+
+    return fichierHTML;
+};
+
